@@ -51,6 +51,7 @@ solver = pyfluent.launch_fluent(precision="double", #double précision
 
 print("\nChargement du maillage...")
 solver.settings.file.read_mesh(file_name="maillages/mesh_4deg.msh")
+solver.tui.define.mesh_interfaces.one_to_one_pairing("yes")
 print("\nMaillage chargé avec succès.")
 
 #==============================================================
@@ -59,23 +60,20 @@ print("\nMaillage chargé avec succès.")
 
 print("\nConfiguration générale...")
 
-# Modèle physique : écoulement compressible
-solver.tui.define.general.set_solver("pressure-based")
-solver.tui.define.general.set_time("transient")
-solver.setup.models.energy.enabled = True # Activer l'énergie pour les écoulements compressibles
+# Modèle physique : écoulement compressible (API moderne)
+solver.settings.setup.general.solver.type = "pressure-based"
+solver.settings.setup.general.solver.time = "transient"
+solver.settings.setup.models.energy.enabled = True # Activer l'énergie
 
-# Modèle de turbulence : k-w-SST
-solver.tui.setup.models.turbulence.ke_sst.enabled = True
-solver.setup.models.viscous.k_omega_options.production_limiter = True #Limiter de production pour éviter les problèmes de convergence à proximité des parois
-solver.setup.models.viscous.k_omega_options.compressibility_effects = True #Pour être plus rigoureux dans le traitement de la turbulence dans les écoulements compressibles
-solver.setup.models.viscous.k_omega_options.curvature_correction = False
-solver.setup.models.viscous.k_omega_options.kw_low_re_correction = False
+# Modèle de turbulence : k-w-SST (API moderne)
+solver.settings.setup.models.viscous.model = "k-omega" 
+solver.settings.setup.models.viscous.k_omega_model = "sst"
 
 # Propriétés du fluide :air
-solver.setup.materials.fluid['air'].density.option = "ideal-gas" #Gaz parfait
-solver.setup.materials.fluid['air'].viscosity.option = "sutherland" #Viscosité de Sutherland
+solver.settings.setup.materials.fluid['air'].density.option = "ideal-gas" #Gaz parfait
+solver.settings.setup.materials.fluid['air'].viscosity.option = "sutherland" #Viscosité de Sutherland
 
-solver.setup.cell_zone_conditions.fluid['fluid-pi_ce-corps_surfacique'].material = "air"
+solver.settings.setup.cell_zone_conditions.fluid['fluid-pi_ce-corps_surfacique'].material = "air"
 
 #==============================================================
 # region 3. CONDITIONS AU LIMITES
@@ -85,23 +83,26 @@ print("\nConfiguration des conditions aux limites...")
 
 solver.settings.setup.general.operating_conditions.operating_pressure = P
 
-# Inlet : vitesse imposée
-solver.setup.boundary_conditions.velocity_inlet['inlet'].vmag = u # m/s
-solver.setup.boundary_conditions.velocity_inlet['inlet'].ke_spec = "Intensity and Viscosity Ratio"
-solver.setup.boundary_conditions.velocity_inlet['inlet'].turb_intensity = 0.001 # 0.1% d'intensité turbulente
-solver.setup.boundary_conditions.velocity_inlet['inlet'].turb_viscosity_ratio = 10 # Ratio de viscosité turbulente
-solver.setup.boundary_conditions.velocity_inlet['inlet'].t0 = T # Kelvin
+# --- INLET ---
+inlet = solver.setup.boundary_conditions.velocity_inlet['inlet']
+inlet.momentum.vmag = u                                  # Onglet Momentum
+inlet.turbulence.turb_intensity = 0.001                  # Onglet Turbulence
+inlet.turbulence.turb_viscosity_ratio = 10              # Onglet Turbulence
+inlet.thermal.temperature = T                                     # Onglet Thermal
 
-# Outlet : pression imposée
-solver.setup.boundary_conditions.pressure_outlet['Outlet'].gauge_pressure = 0.0 # Pa
-solver.setup.boundary_conditions.pressure_outlet['Outlet'].t0 = T # Kelvin
+# --- OUTLET ---
+outlet = solver.setup.boundary_conditions.pressure_outlet['outlet']
+outlet.momentum.gauge_pressure = 0.0                     # Onglet Momentum
+outlet.turbulence.turb_intensity = 0.001                  # Onglet Turbulence
+outlet.turbulence.turb_viscosity_ratio = 10               # Onglet Turbulence
+outlet.thermal.backflow_total_temperature = T                                    # Onglet Thermal
 
-# Movings Walls : parois mobiles pour simuler le mouvement de l'air autour du profil
-solver.setup.boundary_conditions.wall['moving_walls'].motion_bc = "Moving Wall"
-solver.setup.boundary_conditions.wall['moving_walls'].vmag = u # m/s
-solver.setup.boundary_conditions.wall['moving_walls'].shear_bc = "No Slip"
-solver.setup.boundary_conditions.wall['moving_walls'].x_dir = 1 # Mouvement dans la direction X
-solver.setup.boundary_conditions.wall['moving_walls'].y_dir = 0 # Pas de mouvement dans la direction Y
+# --- MOVING WALLS ---
+murs = solver.setup.boundary_conditions.wall['moving_walls']
+murs.momentum.motion_bc = "Moving Wall"                  # Onglet Momentum
+murs.momentum.vmag = u                                   # Onglet Momentum
+murs.momentum.shear_bc = "No Slip"                       # Onglet Momentum
+murs.momentum.direction = [1.0, 0.0]                                # Onglet Momentum
 
 #==============================================================
 # region 4. CONTRÔLE DE LA SOLUTION ET STRATÉGIE DE SOLUTION
@@ -111,22 +112,16 @@ print("\nConfiguration des schémas de discrétisation...")
 # Schémas de discrétisation
 solver.solution.methods.p_v_coupling.flow_scheme = "Coupled" # Schéma couplé
 solver.solution.methods.gradient_scheme = "least-square-cell-based"
-solver.solution.methods.pressure_scheme = "second-order"
-solver.solution.methods.momentum_scheme = "second-order"
-solver.solution.methods.energy_scheme = "second-order"
-solver.solution.methods.turbulence_scheme = "second-order"
-solver.solution.methods.density_scheme = "second-order"
-solver.solution.methods.time_scheme = "second-order implicit"
+solver.settings.solution.methods.transient_formulation = "unsteady-2nd-order"
 
 # Critères de convergence
 print("\nConfiguration des critères de convergence...")
-solver.solution.monitor.residual.equations['continuity'].absolute_tolerance = 1e-4
-solver.solution.monitor.residual.equations['x-velocity'].absolute_tolerance = 1e-4
-solver.solution.monitor.residual.equations['y-velocity'].absolute_tolerance = 1e-4
-solver.solution.monitor.residual.equations['pressure'].absolute_tolerance = 1e-4
-solver.solution.monitor.residual.equations['energy'].absolute_tolerance = 1e-6
-solver.solution.monitor.residual.equations['k'].absolute_tolerance = 1e-6
-solver.solution.monitor.residual.equations['omega'].absolute_tolerance = 1e-6
+solver.solution.monitor.residual.equations['continuity'].absolute_criteria = 1e-4
+solver.solution.monitor.residual.equations['x-velocity'].absolute_criteria = 1e-4
+solver.solution.monitor.residual.equations['y-velocity'].absolute_criteria = 1e-4
+solver.solution.monitor.residual.equations['energy'].absolute_criteria = 1e-6
+solver.solution.monitor.residual.equations['k'].absolute_criteria = 1e-6
+solver.solution.monitor.residual.equations['omega'].absolute_criteria = 1e-6
 
 #==============================================================
 # region 5. PARAMÉTRAGE DE LA SIMULATION 
@@ -136,32 +131,35 @@ print("\nInitialisation de la simulation : standard à partir de l'inlet...")
 
 # Initialisation standard
 solver.solution.initialization.initialization_type = "standard"
-solver.tui.solve.initialize.compute_defaults("inlet")
+solver.tui.solve.initialize.compute_defaults.velocity_inlet("inlet")
 solver.solution.initialization.standard_initialize() # Initialisation standard
 
 # Paramètres de la simulation
-solver.solution.run_time_options.time_step = 0.005 # s
+solver.settings.solution.run_calculation.transient_controls.time_step_size = 0.005 # s
 
 #==============================================================
 # region 6. AUTOSAVE DE SECOURS
 #==============================================================
 print("\nConfiguration de l'autosave de sécurité...")
-solver.settings.file.autosave.interval = 100
-solver.settings.file.autosave.file_name_type = "time-step"
-solver.settings.file.autosave.retain_most_recent_files = True
-solver.settings.file.autosave.number_of_files_to_retain = 3
 
-solver.settings.file.autosave.root_name = "autosave_securite/4deg/autosave_4deg"
+autosave = solver.settings.file.auto_save
+
+autosave.save_data_file_every = {
+    "frequency_type": "time-step", 
+    "save_frequency": 100
+}
+autosave.retain_most_recent_files = True
+autosave.max_files = 3
+
+autosave.root_name = "autosave_securite/4deg/autosave_4deg"
 
 #==============================================================
 # region 7. EXPORT DES RÉSULTATS POUR PARAVIEW
 #==============================================================
 print("\nConfiguration de l'export pour ParaView...")
-if "export_paraview" in solver.settings.calculation_activities.data_export:
-    solver.settings.calculation_activities.data_export.delete(obj_name="export_paraview")
 
-solver.settings.calculation_activities.data_export.create(obj_name="export_paraview")
-export = solver.settings.calculation_activities.data_export["export_paraview"]
+solver.settings.file.export.create(obj_name="export_paraview")
+export = solver.settings.file.export["export_paraview"]
 
 export.format = "ensight-gold"
 export.frequency_of = "time-step"
@@ -212,7 +210,7 @@ print("\nLancement du calcul...")
 start_time = time.perf_counter()
 
 solver.solution.run_calculation.calculate(
-    time_step_count=500,
+    time_step_count=400,
     max_iter_per_step=100
 )
 
