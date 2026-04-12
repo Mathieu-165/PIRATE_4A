@@ -1,5 +1,6 @@
 # Modules Python 
 import numpy as np
+import time  
 
 # Modules Fluent
 import ansys.fluent.core as pyfluent
@@ -11,7 +12,7 @@ chemin_exact_fluent = r"C:\Program Files\ANSYS Inc\ANSYS Student\v261\fluent"
 os.environ["PYFLUENT_FLUENT_ROOT"] = chemin_exact_fluent
 
 #==============================================================
-# region 1. CONDITIONS D'ÉCOULEMENT
+# region 1. CONDITIONS DE L'ÉCOULEMENT
 #==============================================================
 
 M = 0.5 # Mach number
@@ -41,7 +42,7 @@ print('Angle d\'attaque : 4°')
 # region 2. DÉMARRAGE DE FLUENT ET CHARGEMENT DU MAILLAGE
 #==============================================================
 
-print("\nDémarrage de Fluent en mode solveur avec 4 coeurs, précision double...")
+print("\nDémarrage de Fluent en mode solveur avec 4 coeurs, précision double, 2D...")
 solver = pyfluent.launch_fluent(precision="double", #double précision
                                 processor_count=4, #nombre de coeurs
                                 mode="solver", #arrière plan
@@ -77,10 +78,12 @@ solver.setup.materials.fluid['air'].viscosity.option = "sutherland" #Viscosité 
 solver.setup.cell_zone_conditions.fluid['fluid-pi_ce-corps_surfacique'].material = "air"
 
 #==============================================================
-# region 3. CONFIGURATION GÉNÉRALE ET MODÈLES PHYSIQUES
+# region 3. CONDITIONS AU LIMITES
 #==============================================================
 
 print("\nConfiguration des conditions aux limites...")
+
+solver.settings.setup.general.operating_conditions.operating_pressure = P
 
 # Inlet : vitesse imposée
 solver.setup.boundary_conditions.velocity_inlet['inlet'].vmag = u # m/s
@@ -95,15 +98,16 @@ solver.setup.boundary_conditions.pressure_outlet['Outlet'].t0 = T # Kelvin
 
 # Movings Walls : parois mobiles pour simuler le mouvement de l'air autour du profil
 solver.setup.boundary_conditions.wall['moving_walls'].motion_bc = "Moving Wall"
-solver.setup.boundary_conditions.wall['moving_walls'].velocity = u # m/s
-solver.setup.boundary_conditions.wall['moving_walls'].t0 = T # Kelvin
+solver.setup.boundary_conditions.wall['moving_walls'].vmag = u # m/s
 solver.setup.boundary_conditions.wall['moving_walls'].shear_bc = "No Slip"
+solver.setup.boundary_conditions.wall['moving_walls'].x_dir = 1 # Mouvement dans la direction X
+solver.setup.boundary_conditions.wall['moving_walls'].y_dir = 0 # Pas de mouvement dans la direction Y
 
 #==============================================================
 # region 4. CONTRÔLE DE LA SOLUTION ET STRATÉGIE DE SOLUTION
 #==============================================================
 
-print("\nConfiguration du contrôle de la solution...")
+print("\nConfiguration des schémas de discrétisation...")
 # Schémas de discrétisation
 solver.solution.methods.p_v_coupling.flow_scheme = "Coupled" # Schéma couplé
 solver.solution.methods.gradient_scheme = "least-square-cell-based"
@@ -115,6 +119,7 @@ solver.solution.methods.density_scheme = "second-order"
 solver.solution.methods.time_scheme = "second-order implicit"
 
 # Critères de convergence
+print("\nConfiguration des critères de convergence...")
 solver.solution.monitor.residual.equations['continuity'].absolute_tolerance = 1e-4
 solver.solution.monitor.residual.equations['x-velocity'].absolute_tolerance = 1e-4
 solver.solution.monitor.residual.equations['y-velocity'].absolute_tolerance = 1e-4
@@ -122,13 +127,12 @@ solver.solution.monitor.residual.equations['pressure'].absolute_tolerance = 1e-4
 solver.solution.monitor.residual.equations['energy'].absolute_tolerance = 1e-6
 solver.solution.monitor.residual.equations['k'].absolute_tolerance = 1e-6
 solver.solution.monitor.residual.equations['omega'].absolute_tolerance = 1e-6
-solver.solution.monitor.residual.equations['density'].absolute_tolerance = 1e-6
 
 #==============================================================
 # region 5. PARAMÉTRAGE DE LA SIMULATION 
 #==============================================================
 
-print("\nInitialisation de la simulation...")
+print("\nInitialisation de la simulation : standard à partir de l'inlet...")
 
 # Initialisation standard
 solver.solution.initialization.initialization_type = "standard"
@@ -137,17 +141,92 @@ solver.solution.initialization.standard_initialize() # Initialisation standard
 
 # Paramètres de la simulation
 solver.solution.run_time_options.time_step = 0.005 # s
-solver.solution.run_calculation.time_step_count = 1000 # Nombre de pas de temps
-solver.solution.run_calculation.max_iterations = 100 # Nombre d'itérations maximum par pas de temps
-
-print("\n----- Informations sur la simulation -----")
-print(f"Durée d'écoulement simulée : {solver.solution.run_calculation.time_step_count * solver.solution.run_time_options.time_step:.2f} s")
-print(f"Pas de temps : {solver.solution.run_time_options.time_step:.4f} s")
-print(f"Nombre de pas de temps : {solver.solution.run_calculation.time_step_count}")
-print(f"Nombre d'itérations par pas de temps : {solver.solution.run_calculation.max_iterations}")
-print(f"Nombre total d'itérations : {solver.solution.run_calculation.time_step_count * solver.solution.run_calculation.max_iterations}")
 
 #==============================================================
 # region 6. AUTOSAVE DE SECOURS
 #==============================================================
+print("\nConfiguration de l'autosave de sécurité...")
+solver.settings.file.autosave.interval = 100
+solver.settings.file.autosave.file_name_type = "time-step"
+solver.settings.file.autosave.retain_most_recent_files = True
+solver.settings.file.autosave.number_of_files_to_retain = 3
+
+solver.settings.file.autosave.root_name = "autosave_securite/4deg/autosave_4deg"
+
+#==============================================================
+# region 7. EXPORT DES RÉSULTATS POUR PARAVIEW
+#==============================================================
+print("\nConfiguration de l'export pour ParaView...")
+if "export_paraview" in solver.settings.calculation_activities.data_export:
+    solver.settings.calculation_activities.data_export.delete(obj_name="export_paraview")
+
+solver.settings.calculation_activities.data_export.create(obj_name="export_paraview")
+export = solver.settings.calculation_activities.data_export["export_paraview"]
+
+export.format = "ensight-gold"
+export.frequency_of = "time-step"
+export.frequency = 2
+export.variables = ["pressure", "velocity", "mach-number", "temperature"]
+
+# C'est ICI qu'on choisit le dossier pour ParaView
+export.file_name = "export_paraview/4deg/export_4deg"
+
+#==============================================================
+# region 8. RAPPORT DE FORCES : DRAG & LIFT
+#==============================================================
+print("\nConfiguration des force report...")
+
+# DRAG
+solver.settings.solution.report_definitions.drag.create(obj_name="drag_report")
+drag = solver.settings.solution.report_definitions.drag["drag_report"]
+drag.force_vector = [1, 0, 0] # Direction X
+drag.thread_names = ['aile']
+
+# LIFT
+solver.settings.solution.report_definitions.lift.create(obj_name="lift_report")
+lift = solver.settings.solution.report_definitions.lift["lift_report"]
+lift.force_vector = [0, 1, 0] # Direction Y
+lift.thread_names = ['aile']
+
+# FICHIER RAPPORT
+print("\nConfiguration du fichier de rapport pour post-traitement...")
+solver.settings.solution.report_files.create(obj_name="rapport_forces")
+report = solver.settings.solution.report_files["rapport_forces"]
+report.report_definitions = ["drag_report", "lift_report"]
+
+report.file_name = "export_forces/suivi_forces.out"
+report.frequency_of = "time-step"
+report.frequency = 1 # On enregistre à chaque pas de temps
+
+#==============================================================
+# region 9. SAUVEGARDE DE LA CONFIGURATION
+#==============================================================
+
+print("\nSauvegarde de la configuration...")
+solver.file.write(file_type="case", file_name="configurations/configuration_4deg.cas.h5")
+
+#==============================================================
+# region 10. LANCEMENT DU CALCUL
+#==============================================================
+print("\nLancement du calcul...")
+start_time = time.perf_counter()
+
+solver.solution.run_calculation.calculate(
+    time_step_count=500,
+    max_iter_per_step=100
+)
+
+end_time = time.perf_counter()
+elapsed_time = end_time - start_time
+
+heures = elapsed_time // 3600
+minutes = (elapsed_time % 3600) // 60
+secondes = elapsed_time % 60
+
+print("\n \n \n","="*40)
+print(f"Calcul terminé en {int(heures)}h {int(minutes)}m {secondes:.2f}s")
+print("="*40)
+
+print("\nExtinction de FLuent...")
 solver.exit()
+print("\nFluent fermé avec succès.")
