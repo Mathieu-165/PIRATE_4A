@@ -1,4 +1,6 @@
 # Modules Python 
+from pprint import pprint
+
 import numpy as np
 import time  
 
@@ -50,9 +52,11 @@ solver = pyfluent.launch_fluent(precision="double", #double précision
                                 dimension=2) #2D
 
 print("\nChargement du maillage...")
-solver.settings.file.read_mesh(file_name="maillages/mesh_4deg.msh")
+solver.tui.file.import_.cgns.mesh("maillages/mesh_4deg.cgns")
 solver.tui.define.mesh_interfaces.one_to_one_pairing("yes")
 print("\nMaillage chargé avec succès.")
+
+print(solver.settings.setup.cell_zone_conditions.fluid.keys())
 
 #==============================================================
 # region 3. CONFIGURATION GÉNÉRALE ET MODÈLES PHYSIQUES
@@ -73,7 +77,8 @@ solver.settings.setup.models.viscous.k_omega_model = "sst"
 solver.settings.setup.materials.fluid['air'].density.option = "ideal-gas" #Gaz parfait
 solver.settings.setup.materials.fluid['air'].viscosity.option = "sutherland" #Viscosité de Sutherland
 
-solver.settings.setup.cell_zone_conditions.fluid['fluid-pi_ce-corps_surfacique'].material = "air"
+solver.setup.cell_zone_conditions.fluid["pi_ce_1_1"].material = "air"
+solver.setup.cell_zone_conditions.fluid["pi_ce_1_2"].material = "air"
 
 #==============================================================
 # region 3. CONDITIONS AU LIMITES
@@ -84,6 +89,7 @@ print("\nConfiguration des conditions aux limites...")
 solver.settings.setup.general.operating_conditions.operating_pressure = P
 
 # --- INLET ---
+solver.tui.define.boundary_conditions.zone_type("inlet", "velocity-inlet")
 inlet = solver.setup.boundary_conditions.velocity_inlet['inlet']
 inlet.momentum.vmag = u                                  # Onglet Momentum
 inlet.turbulence.turb_intensity = 0.001                  # Onglet Turbulence
@@ -91,6 +97,7 @@ inlet.turbulence.turb_viscosity_ratio = 10              # Onglet Turbulence
 inlet.thermal.temperature = T                                     # Onglet Thermal
 
 # --- OUTLET ---
+solver.tui.define.boundary_conditions.zone_type("outlet", "pressure-outlet")
 outlet = solver.setup.boundary_conditions.pressure_outlet['outlet']
 outlet.momentum.gauge_pressure = 0.0                     # Onglet Momentum
 outlet.turbulence.turb_intensity = 0.001                  # Onglet Turbulence
@@ -158,16 +165,19 @@ autosave.root_name = "autosave_securite/4deg/autosave_4deg"
 #==============================================================
 print("\nConfiguration de l'export pour ParaView...")
 
-solver.settings.file.export.create(obj_name="export_paraview")
-export = solver.settings.file.export["export_paraview"]
 
-export.format = "ensight-gold"
-export.frequency_of = "time-step"
-export.frequency = 2
-export.variables = ["pressure", "velocity", "mach-number", "temperature"]
+solver.settings.solution.calculation_activity.automatic_exports.visualize.create(name="export_pv")
+export = solver.settings.solution.calculation_activity.automatic_exports.visualize["export_pv"]
 
-# C'est ICI qu'on choisit le dossier pour ParaView
-export.file_name = "export_paraview/4deg/export_4deg"
+export.set_state({
+    'file_name': 'export_paraview/4deg/export_pv',
+    'frequency': 2,
+    'frequency_of': 'Time Step',
+    'cell_centered': True,
+    'scope': 'surface-select',
+    'cell_zones': None,
+    'quantities': ['pressure', 'velocity', 'temperature', 'mach-number'],
+})
 
 #==============================================================
 # region 8. RAPPORT DE FORCES : DRAG & LIFT
@@ -175,22 +185,29 @@ export.file_name = "export_paraview/4deg/export_4deg"
 print("\nConfiguration des force report...")
 
 # DRAG
-solver.settings.solution.report_definitions.drag.create(obj_name="drag_report")
+solver.settings.solution.report_definitions.drag.create(name="drag_report")
 drag = solver.settings.solution.report_definitions.drag["drag_report"]
-drag.force_vector = [1, 0, 0] # Direction X
-drag.thread_names = ['aile']
-
+drag.set_state({
+    'force_vector': [1, 0, 0],
+    'zones': ['aile'],
+    'report_output_type': 'Drag Force',  # ou 'Drag Coefficient' si vous avez défini une ref area
+    'average_over': 1,
+})
 # LIFT
-solver.settings.solution.report_definitions.lift.create(obj_name="lift_report")
+solver.settings.solution.report_definitions.lift.create(name="lift_report")
 lift = solver.settings.solution.report_definitions.lift["lift_report"]
-lift.force_vector = [0, 1, 0] # Direction Y
-lift.thread_names = ['aile']
+lift.set_state({
+    'force_vector': [0, 1, 0],
+    'zones': ['aile'],
+    'report_output_type': 'Lift Force',  
+})
 
 # FICHIER RAPPORT
 print("\nConfiguration du fichier de rapport pour post-traitement...")
-solver.settings.solution.report_files.create(obj_name="rapport_forces")
-report = solver.settings.solution.report_files["rapport_forces"]
-report.report_definitions = ["drag_report", "lift_report"]
+solver.settings.solution.monitor.report_files.create(name="rapport_forces")
+report = solver.settings.solution.monitor.report_files["rapport_forces"]
+pprint(report.get_state())
+report.report_defs = ["drag_report", "lift_report"]
 
 report.file_name = "export_forces/suivi_forces.out"
 report.frequency_of = "time-step"
@@ -210,7 +227,7 @@ print("\nLancement du calcul...")
 start_time = time.perf_counter()
 
 solver.solution.run_calculation.calculate(
-    time_step_count=400,
+    time_step_count=500,
     max_iter_per_step=100
 )
 
@@ -221,7 +238,7 @@ heures = elapsed_time // 3600
 minutes = (elapsed_time % 3600) // 60
 secondes = elapsed_time % 60
 
-print("\n \n \n","="*40)
+print("\n\n\n","="*40)
 print(f"Calcul terminé en {int(heures)}h {int(minutes)}m {secondes:.2f}s")
 print("="*40)
 
