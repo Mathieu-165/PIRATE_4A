@@ -238,7 +238,8 @@ heures = elapsed_time // 3600
 minutes = (elapsed_time % 3600) // 60
 secondes = elapsed_time % 60
 
-print("\n\n\n","="*40)
+print("\n\n\n")
+print("="*40)
 print(f"Calcul terminé en {int(heures)}h {int(minutes)}m {secondes:.2f}s")
 print("="*40)
 
