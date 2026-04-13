@@ -226,7 +226,7 @@ solver.file.write(file_type="case", file_name="configurations/configuration_4deg
 print("\nLancement du calcul...")
 start_time = time.perf_counter()
 
-solver.solution.run_calculation.calculate(
+solver.solution.run_calculation.dual_time_iterate(
     time_step_count=500,
     max_iter_per_step=100
 )

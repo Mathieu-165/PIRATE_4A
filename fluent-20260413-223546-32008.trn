@@ -1,5 +1,6 @@
-Auto-Transcript Start Time:  21:30:45, 13 Apr 2026 Paris, Madrid (heure d’été) 
+Auto-Transcript Start Time:  22:35:46, 13 Apr 2026 Paris, Madrid (heure d’été) 
 Current Directory: "C:\temp_ansys"
+Information: The server has started and is running.
 
               Welcome to ANSYS Fluent 2026 R1
 
@@ -18,26 +19,26 @@ Connected License Server List:	<Non FlexNet Publisher License Server (FNPLS)>
      license form, additional terms section.
      --------------------------------------------------------------
 Host spawning Node 0 on machine "HP-MathieuG" (win64).
-Host waiting for connection from Node 0 at 127.0.0.1:56496 
+Host waiting for connection from Node 0 at 127.0.0.1:55816 
 
 Node 0 connecting to the Host ... connection established.
 
 --------------------------------------------------------------------------------------
 ID    Hostname     Core  O.S.         PID    CPU Model Name                          
 --------------------------------------------------------------------------------------
-n3    HP-MathieuG  4/12  Windows-x64  30056  AMD Ryzen 5 5600H with Radeon Graphics  
-n2    HP-MathieuG  3/12  Windows-x64  17824  AMD Ryzen 5 5600H with Radeon Graphics  
-n1    HP-MathieuG  2/12  Windows-x64  2052   AMD Ryzen 5 5600H with Radeon Graphics  
-n0*   HP-MathieuG  1/12  Windows-x64  20620  AMD Ryzen 5 5600H with Radeon Graphics  
-host  HP-MathieuG        Windows-x64  29044  AMD Ryzen 5 5600H with Radeon Graphics  
+n3    HP-MathieuG  4/12  Windows-x64  33848  AMD Ryzen 5 5600H with Radeon Graphics  
+n2    HP-MathieuG  3/12  Windows-x64  18932  AMD Ryzen 5 5600H with Radeon Graphics  
+n1    HP-MathieuG  2/12  Windows-x64  18340  AMD Ryzen 5 5600H with Radeon Graphics  
+n0*   HP-MathieuG  1/12  Windows-x64  28480  AMD Ryzen 5 5600H with Radeon Graphics  
+host  HP-MathieuG        Windows-x64  30496  AMD Ryzen 5 5600H with Radeon Graphics  
 
 MPI Option Selected: intel
 Selected system interconnect: default
 --------------------------------------------------------------------------------------
 
-Cleanup script file is C:\\temp_ansys\\cleanup-fluent-HP-MathieuG-29044.bat
+Cleanup script file is C:\\temp_ansys\\cleanup-fluent-HP-MathieuG-30496.bat
 
-HP-MathieuG is already loaded (21.7976).                       Process affinity not being set.
+HP-MathieuG is already loaded (23.702).                       Process affinity not being set.
 
 Graphics driver currently in use: dx11
 
@@ -45,9 +46,3 @@ Graphics driver currently in use: dx11
 Posting ANSYS Product Improvement Program startup data
 Done.
 
-> /exit y
-
-Posting ANSYS Product Improvement Program performance data 
-Done.
-Auto-Transcript Stop Time:  21:32:28, 13 Apr 2026 Paris, Madrid (heure d’été) 
-Total Transcript Time: 1 Minute 43 Second.
