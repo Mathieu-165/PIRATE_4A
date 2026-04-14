@@ -49,7 +49,8 @@ solver = pyfluent.launch_fluent(precision="double", #double précision
                                 processor_count=4, #nombre de coeurs
                                 mode="solver", #arrière plan
                                 start_timeout=120, #120s pour démarrer Fluent
-                                dimension=2) #2D
+                                dimension=2,
+                                cwd=r"C:\temp_ansys") #2D
 
 print("\nChargement du maillage...")
 solver.tui.file.read_case("maillages/mesh_4deg.msh")
@@ -154,27 +155,43 @@ autosave.save_data_file_every = {
 autosave.retain_most_recent_files = True
 autosave.max_files = 3
 
-autosave.root_name = "autosave_securite/4deg/autosave_4deg"
+autosave.root_name = r'C:/temp_ansys/autosave_securite/4deg/autosave_4deg'
 
 #==============================================================
 # region 7. EXPORT DES RÉSULTATS POUR PARAVIEW
 #==============================================================
 print("\nConfiguration de l'export pour ParaView...")
 
+import os
 
-solver.settings.solution.calculation_activity.automatic_exports.visualize.create(name="export_pv")
-export = solver.settings.solution.calculation_activity.automatic_exports.visualize["export_pv"]
+# 1. On récupère le chemin dynamique (Votre excellente idée)
+dossier_actuel = os.getcwd()
+dossier_export = os.path.join(dossier_actuel, "export_pv", "4deg")
+
+# 2. On crée le dossier physiquement
+os.makedirs(dossier_export, exist_ok=True)
+
+# 3. On crée le nom complet du fichier final
+chemin_complet = os.path.join(dossier_export, "export4deg")
+
+# 4. LA MAGIE : On remplace tous les \ de Windows par des / pour Fluent !
+chemin_fluent = chemin_complet.replace("\\", "/")
+
+solver.settings.solution.calculation_activity.automatic_exports.visualize.create(name="export")
+export = solver.settings.solution.calculation_activity.automatic_exports.visualize["export"]
 
 export.set_state({
-    'file_name': 'export_paraview/4deg/export_pv',
+    'file_name': chemin_fluent,
     'frequency': 2,
     'frequency_of': 'Time Step',
     'cell_centered': True,
     'scope': 'surface-select',
     'cell_zones': None,
-    'surfaces' : ['interior-pi_ce-corps_surfacique', 'interior-5'],
-    'quantities': ['pressure', 'velocity', 'temperature', 'mach-number'],
+    'surfaces': ['interior-pi_ce-corps_surfacique', 'interior-5'],
+    'quantities': ['pressure', 'velocity-magnitude', 'temperature', 'mach-number'],
 })
+from pprint import pprint
+pprint(export.get_state())
 
 #==============================================================
 # region 8. RAPPORT DE FORCES : DRAG & LIFT
@@ -206,7 +223,7 @@ report = solver.settings.solution.monitor.report_files["rapport_forces"]
 pprint(report.get_state())
 report.report_defs = ["drag_report", "lift_report"]
 
-report.file_name = "export_forces/suivi_forces.out"
+report.file_name = "C:/temp_ansys/export_forces/suivi_forces.out"
 report.frequency_of = "time-step"
 report.frequency = 1 # On enregistre à chaque pas de temps
 
@@ -215,7 +232,7 @@ report.frequency = 1 # On enregistre à chaque pas de temps
 #==============================================================
 
 print("\nSauvegarde de la configuration...")
-solver.file.write(file_type="case", file_name="configurations/configuration_4deg.cas.h5")
+solver.file.write(file_type="case", file_name="C:/temp_ansys/configurations/configuration_4deg.cas.h5")
 
 #==============================================================
 # region 10. LANCEMENT DU CALCUL
