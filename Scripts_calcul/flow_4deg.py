@@ -52,11 +52,8 @@ solver = pyfluent.launch_fluent(precision="double", #double précision
                                 dimension=2) #2D
 
 print("\nChargement du maillage...")
-solver.tui.file.import_.cgns.mesh("maillages/mesh_4deg.cgns")
-solver.tui.define.mesh_interfaces.one_to_one_pairing("yes")
+solver.tui.file.read_case("maillages/mesh_4deg.msh")
 print("\nMaillage chargé avec succès.")
-
-print(solver.settings.setup.cell_zone_conditions.fluid.keys())
 
 #==============================================================
 # region 3. CONFIGURATION GÉNÉRALE ET MODÈLES PHYSIQUES
@@ -77,8 +74,7 @@ solver.settings.setup.models.viscous.k_omega_model = "sst"
 solver.settings.setup.materials.fluid['air'].density.option = "ideal-gas" #Gaz parfait
 solver.settings.setup.materials.fluid['air'].viscosity.option = "sutherland" #Viscosité de Sutherland
 
-solver.setup.cell_zone_conditions.fluid["pi_ce_1_1"].material = "air"
-solver.setup.cell_zone_conditions.fluid["pi_ce_1_2"].material = "air"
+solver.setup.cell_zone_conditions.fluid["fluid-pi_ce-corps_surfacique"].material = "air"
 
 #==============================================================
 # region 3. CONDITIONS AU LIMITES
@@ -176,6 +172,7 @@ export.set_state({
     'cell_centered': True,
     'scope': 'surface-select',
     'cell_zones': None,
+    'surfaces' : ['interior-pi_ce-corps_surfacique', 'interior-5'],
     'quantities': ['pressure', 'velocity', 'temperature', 'mach-number'],
 })
 
