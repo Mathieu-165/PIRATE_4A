@@ -1,0 +1,237 @@
+Auto-Transcript Start Time:  19:42:09, 16 Apr 2026 Paris, Madrid (heure d’été) 
+Current Directory: "C:\temp_ansys"
+Information: The server has started and is running.
+
+              Welcome to ANSYS Fluent 2026 R1
+
+              Copyright 2026 Synopsys, Inc. and ANSYS, Inc. All rights reserved.
+              Unauthorized use, distribution or duplication is prohibited.
+              This product is subject to U.S. laws governing export and re-export.
+              For full Legal Notice, see documentation.
+
+Build Time: Feb  2 2026 16:27:16 EST  Build Id: 10262  
+ 
+Connected License Server List:	<Non FlexNet Publisher License Server (FNPLS)>
+
+     --------------------------------------------------------------
+     This is a student version of ANSYS FLUENT. Usage of this product
+     license is limited to the terms and conditions specified in your ANSYS
+     license form, additional terms section.
+     --------------------------------------------------------------
+Host spawning Node 0 on machine "HP-MathieuG" (win64).
+Host waiting for connection from Node 0 at 127.0.0.1:49200 
+
+Node 0 connecting to the Host ... connection established.
+
+--------------------------------------------------------------------------------------
+ID    Hostname     Core  O.S.         PID    CPU Model Name                          
+--------------------------------------------------------------------------------------
+n3    HP-MathieuG  4/12  Windows-x64  28084  AMD Ryzen 5 5600H with Radeon Graphics  
+n2    HP-MathieuG  3/12  Windows-x64  22584  AMD Ryzen 5 5600H with Radeon Graphics  
+n1    HP-MathieuG  2/12  Windows-x64  21156  AMD Ryzen 5 5600H with Radeon Graphics  
+n0*   HP-MathieuG  1/12  Windows-x64  31192  AMD Ryzen 5 5600H with Radeon Graphics  
+host  HP-MathieuG        Windows-x64  17332  AMD Ryzen 5 5600H with Radeon Graphics  
+
+MPI Option Selected: intel
+Selected system interconnect: default
+--------------------------------------------------------------------------------------
+
+Cleanup script file is C:\\temp_ansys\\cleanup-fluent-HP-MathieuG-17332.bat
+
+HP-MathieuG is already loaded (24.7173).                       Process affinity not being set.
+
+Graphics driver currently in use: dx11
+
+
+Posting ANSYS Product Improvement Program startup data
+Done.
+
+> 
+Reading "maillages/mesh_4deg.msh"...
+
+Buffering for file scan...
+
+  126956 nodes, binary.
+    2325 nodes, binary.
+  264038 2D interior faces, zone  1, binary.
+    1030 2D interior faces, zone  2, binary.
+     275 2D velocity-inlet faces, zone  6, binary.
+     740 2D wall faces, zone  7, binary.
+     275 2D pressure-outlet faces, zone  8, binary.
+     515 2D wall faces, zone  9, binary.
+     260 2D interface faces, zone 10, binary.
+     260 2D interface faces, zone 11, binary.
+  138112 mixed cells, zone  3, binary.
+
+
+
+Building...
+     mesh
+	auto partitioning mesh by Metis (fast),
+	distributing mesh
+		parts....,
+		faces....,
+		nodes....,
+		cells....,
+        bandwidth reduction using Reverse Cuthill-McKee: 32076/218 = 147.138
+     materials,
+     interface,
+     domains,
+     zones,
+	zone_de_contact-trg
+	zone_de_contact-src
+	aile
+	outlet
+	moving_walls
+	inlet
+	fluid-pi_ce-corps_surfacique
+	pi_ce-corps_surfacique
+	interior-pi_ce-corps_surfacique
+	interior-5
+	wall-12
+	wall-13
+     mesh interfaces,
+     parallel,
+
+Info: At least one many-to-many mesh interface is found in the case file. Such mesh interfaces will not be available in a future release of Fluent. It is recommended to convert to the current default one-to-one mesh interfaces with the following text command:
+/define/mesh-interfaces/one-to-one-pairing? yes
+
+Done.
+Pressure-Velocity Coupling scheme is set to SIMPLE
+(inlet)
+
+Note: Setting Frequency (solution/calculation-activity/auto-save/save-data-file-every/save-frequency) is not set as it is inactive
+Fast-loading "C:\PROGRA~1\ANSYSI~1\ANSYSS~1\v261\fluent\fluent26.1.0\\addons\afd\lib\hdfio.bin"
+Done.
+
+Writing to HP-MathieuG:"C:/temp_ansys/configurations/configuration_4deg.cas.h5" in NODE0 mode and compression level 1 ...
+Grouping cells for Laplace smoothing ...
+      138112 cells,     1 zone  ...
+      267653 faces,     9 zones ...
+      129281 nodes,     1 zone  ...
+  Done.
+Done.
+Creating new file C:\\temp_ansys\\export_forces\\suivi_forces_5_1.out
+Overwriting "C:\\temp_ansys\\export_forces\\suivi_forces_5_1.out"  of Report File "rapport_forces"
+
+Updating solution at time levels N and N-1.
+ done.
+
+  iter  continuity  x-velocity  y-velocity      energy           k       omega     time/iter
+     1  1.0000e+00  4.0624e-06  1.5267e-06  7.4790e-06  3.4282e+00  4.5294e+01  0:00:09    9
+     2  1.0000e+00  9.8708e-06  6.1333e-06  5.2383e-06  5.1708e-01  2.8868e-01  0:00:09    8
+     3  1.0000e+00  5.9569e-06  3.1881e-06  3.4675e-06  3.0424e-01  2.4304e-01  0:00:07    7
+     4  4.6278e-01  3.5568e-06  1.8609e-06  2.2771e-06  9.8149e-02  1.2907e-01  0:00:06    6
+     5  2.8051e-01  2.1106e-06  1.0369e-06  1.5866e-06  2.7417e-02  1.0530e-01  0:00:04    5
+     6  1.4175e-01  1.5590e-06  7.4040e-07  1.0105e-06  9.9256e-03  3.1297e-02  0:00:03    4
+     7  8.2165e-02  1.0911e-06  4.9124e-07  6.6808e-07  6.2038e-03  1.8059e-02  0:00:02    3
+     8  5.3914e-02  7.8415e-07  3.3333e-07  4.7733e-07  6.1847e-03  1.1773e-02  0:00:02    2
+     9  4.1970e-02  5.7655e-07  2.3881e-07  3.5189e-07  6.7355e-03  6.7159e-03  0:00:01    1
+    10  3.1780e-02  4.3228e-07  1.7683e-07  2.6661e-07  7.4184e-03  3.8987e-03  0:00:00    0
+Flow time = 0.005s, time step = 1
+
+Reading journal file C:/temp_ansys/export_tmp.jou...
+
+> /file/export/ensight-gold
+EnSight-Gold output file name [] C:/temp_ansys/export_pv/4deg/res_001.vtk
+
+EnSight-Gold scalar(1)> pressure
+
+EnSight-Gold scalar(2)> mach-number
+
+EnSight-Gold scalar(3)> temperature
+
+EnSight-Gold scalar(4)> velocity
+
+EnSight-Gold scalar(5)> 
+absolute-pressure                               q-criterion
+aspect-ratio                                    radial-coordinate
+axial-coordinate                                radial-velocity
+boundary-cell-dist                              raw-q-criterion
+boundary-layer-cells                            reference-temperature-at-y+
+boundary-normal-dist                            rel-mach-number
+boundary-volume-dist                            rel-radial-velocity
+cell-acoustic-courant-number                    rel-tangential-velocity
+cell-convective-courant-number                  rel-total-enthalpy
+cell-element-type                               rel-total-pressure
+cell-equiangle-skew                             rel-total-temperature
+cell-equivolume-skew                            rel-velocity-magnitude
+cell-id                                         relative-velocity-angle
+cell-parent-index                               relative-x-velocity
+cell-partition-active                           relative-y-velocity
+cell-partition-stored                           rescaled-schlieren
+cell-refine-level                               rescaled-streamwise-schlieren
+cell-reynolds-number                            rothalpy
+cell-type                                       schlieren
+cell-volume                                     skin-friction-coef
+cell-volume-change                              smoothed-cell-refine-level
+cell-wall-distance                              sound-speed
+cell-weight                                     specific-diss-rate
+cell-zone                                       specific-heat-cp
+density                                         stanton-number
+density-all                                     strain-rate-mag
+dp-dt                                           stream-function
+dp-dx                                           tangential-velocity
+dp-dy                                           temperature
+dx-velocity-dx                                  thermal-conductivity-eff
+dx-velocity-dy                                  thermal-conductivity-lam
+dy-velocity-dx                                  total-energy
+dy-velocity-dy                                  total-enthalpy
+dynamic-pressure                                total-enthalpy-deviation
+enthalpy                                        total-pressure
+entropy                                         total-temperature
+face-area-magnitude                             turb-diss-rate
+face-handedness                                 turb-intensity
+gamma                                           turb-kinetic-energy
+gas-constant                                    turb-reynolds-number-rey
+heat-flux                                       velocity-angle
+heat-transfer-coef                              velocity-magnitude
+heat-transfer-coef-wall                         viscosity-eff
+heat-transfer-coef-wall-adj                     viscosity-lam
+heat-transfer-coef-yplus                        viscosity-ratio
+interface-overlap-fraction                      viscosity-turb
+internal-energy                                 vorticity-mag
+lambda2-criterion                               wall-adjacent-temperature
+logarithmic-streamwise-schlieren                wall-shear
+mach-number                                     wall-temp-in-surf
+mark-poor-elements                              wall-temp-out-surf
+mass-imbalance                                  wall-temp-thin
+mesh-x-velocity                                 wall-temperature
+mesh-y-velocity                                 x-coordinate
+nusselt-number                                  x-face-area
+orthogonal-quality                              x-velocity
+partition-neighbors                             x-wall-shear
+prandtl-number-eff                              y-coordinate
+prandtl-number-lam                              y-face-area
+pressure                                        y-plus
+pressure-coefficient                            y-star
+pressure-hessian-indicator                      y-velocity
+prismatic-adaption-cells                        y-wall-shear
+production-of-k
+
+EnSight-Gold scalar(5)> no
+
+Error: invalid command
+Error Object: "no"
+
+Warning: An error or interrupt occurred while reading the journal file.
+Some commands may not have been completed.
+
+
+Interrupted.
+
+Interrupted.
+
+Error: An error or interrupt occurred in the previous operation.
+       Details have been printed to the text console transcript.
+Error Object: #f
+
+Posting ANSYS Product Improvement Program performance data 
+Done.
+Shutting down Server...
+Services Shutdown...Done.
+Server Shutdown...Done.
+Queue Cleared...Done.
+Shutdown Complete.
+Auto-Transcript Stop Time:  19:44:39, 16 Apr 2026 Paris, Madrid (heure d’été) 
+Total Transcript Time: 2 Minute 30 Second.

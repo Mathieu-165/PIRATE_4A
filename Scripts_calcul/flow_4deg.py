@@ -160,38 +160,57 @@ autosave.root_name = r'C:/temp_ansys/autosave_securite/4deg/autosave_4deg'
 #==============================================================
 # region 7. EXPORT DES RÉSULTATS POUR PARAVIEW
 #==============================================================
-print("\nConfiguration de l'export pour ParaView...")
+# print("\nConfiguration de l'export pour ParaView...")
 
-import os
+# import os
 
-# 1. On récupère le chemin dynamique (Votre excellente idée)
-dossier_actuel = os.getcwd()
-dossier_export = os.path.join(dossier_actuel, "export_pv", "4deg")
+# # 1. On récupère le chemin dynamique (Votre excellente idée)
+# dossier_actuel = os.getcwd()
+# dossier_export = os.path.join(dossier_actuel, "export_pv", "4deg")
 
-# 2. On crée le dossier physiquement
-os.makedirs(dossier_export, exist_ok=True)
+# # 2. On crée le dossier physiquement
+# os.makedirs(dossier_export, exist_ok=True)
 
-# 3. On crée le nom complet du fichier final
-chemin_complet = os.path.join(dossier_export, "export4deg")
+# # 3. On crée le nom complet du fichier final
+# chemin_complet = os.path.join(dossier_export, "export4deg")
 
-# 4. LA MAGIE : On remplace tous les \ de Windows par des / pour Fluent !
-chemin_fluent = chemin_complet.replace("\\", "/")
+# # 4. LA MAGIE : On remplace tous les \ de Windows par des / pour Fluent !
+# chemin_fluent = chemin_complet.replace("\\", "/")
 
-solver.settings.solution.calculation_activity.automatic_exports.visualize.create(name="export")
-export = solver.settings.solution.calculation_activity.automatic_exports.visualize["export"]
+# solver.settings.solution.calculation_activity.automatic_exports.visualize.create(name="export")
+# export = solver.settings.solution.calculation_activity.automatic_exports.visualize["export"]
 
-export.set_state({
-    'file_name': chemin_fluent,
-    'frequency': 2,
-    'frequency_of': 'Time Step',
-    'cell_centered': True,
-    'scope': 'surface-select',
-    'cell_zones': None,
-    'surfaces': ['interior-pi_ce-corps_surfacique', 'interior-5'],
-    'quantities': ['pressure', 'velocity-magnitude', 'temperature', 'mach-number'],
-})
-from pprint import pprint
-pprint(export.get_state())
+# export.set_state({
+#     'file_name': chemin_fluent,
+#     'frequency': 2,
+#     'frequency_of': 'Time Step',
+#     'cell_centered': True,
+#     'scope': 'surface-select',
+#     'cell_zones': None,
+#     'surfaces': ['interior-pi_ce-corps_surfacique', 'interior-5'],
+#     'quantities': ['pressure', 'velocity-magnitude', 'temperature', 'mach-number'],
+# })
+# from pprint import pprint
+# pprint(export.get_state())
+
+def export_ensight_step(solver, file_name_step):
+    journal_lines = [
+        "/file/export/ensight-gold",
+        file_name_step,                      # case/data by base name          # cell-centered
+        "pressure",
+        "mach-number", 
+        "temperature",
+        ""
+        "velocity",
+        "",                              # fin de liste variables
+        "no",                              # append to existing files
+    ]
+    
+    journal_path = "C:/temp_ansys/export_tmp.jou"
+    with open(journal_path, "w") as f:
+        f.write("\n".join(journal_lines) + "\n")
+    
+    solver.tui.file.read_journal(journal_path)
 
 #==============================================================
 # region 8. RAPPORT DE FORCES : DRAG & LIFT
@@ -240,10 +259,30 @@ solver.file.write(file_type="case", file_name="C:/temp_ansys/configurations/conf
 print("\nLancement du calcul...")
 start_time = time.perf_counter()
 
-solver.solution.run_calculation.dual_time_iterate(
-    time_step_count=500,
-    max_iter_per_step=100
-)
+dossier_pv = r"C:\temp_ansys\export_pv\4deg"
+os.makedirs(dossier_pv, exist_ok=True)
+chemin_base = dossier_pv.replace("\\", "/") + "/res_"
+
+for boucle in range(1,251) :
+    print(f"\n--- boucle {boucle}/250 ---")
+
+    file_name_step = chemin_base + f"{boucle:03d}.vtk"
+
+    solver.solution.run_calculation.dual_time_iterate(
+        time_step_count=1,
+        max_iter_per_step=10
+    )
+
+    solver.tui.file.start_transcript("C:/temp_ansys/transcript_export.txt")
+    export_ensight_step(solver, file_name_step)
+    solver.tui.file.stop_transcript()
+
+
+    if os.path.exists(file_name_step):
+        print(f"✅ Succès : Le fichier {file_name_step} est bien sur le disque.")
+    else:
+        print(f"❌ ALERTE : Fluent n'a pas créé le fichier {file_name_step}.")
+        break
 
 end_time = time.perf_counter()
 elapsed_time = end_time - start_time
