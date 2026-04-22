@@ -1,20 +1,20 @@
-# Modules Python 
+# Python Modules 
 from pprint import pprint
 
 import numpy as np
 import time  
 
-# Modules Fluent
+# Fluent Modules
 import ansys.fluent.core as pyfluent
 
-# Emplacement de Fluent 2026 R1 (v261)
+# Location of Fluent 2026 R1 (v261)
 import os
 
-chemin_exact_fluent = r"C:\Program Files\ANSYS Inc\ANSYS Student\v261\fluent"
-os.environ["PYFLUENT_FLUENT_ROOT"] = chemin_exact_fluent
+exact_fluent_path = r"C:\Program Files\ANSYS Inc\ANSYS Student\v261\fluent"
+os.environ["PYFLUENT_FLUENT_ROOT"] = exact_fluent_path
 
 #==============================================================
-# region 1. CONDITIONS DE L'ÉCOULEMENT
+# region 1. FLOW CONDITIONS
 #==============================================================
 
 M = 0.5 # Mach number
@@ -25,101 +25,101 @@ R = 287.04 # J/kg/K
 GAMMA = 1.4 
 RHO = P / (R * T) # kg/m3
 MU = 1.46e-6 * T**1.5 / (T + 110.4) # Pa.s
-L = 1 # m Corde du profil
+L = 1 # m Airfoil chord
 
 a = (GAMMA * R * T) ** 0.5 # m/s
 u = M * a # m/s
 REYNOLDS = RHO * u * L / MU
 
-print('\n----- Conditions d\'écoulement -----')
-print(f'Mach : {M}')
-print(f'Température statique champ lointain : {T} K')
-print(f'Pression statique champ lointain : {P} Pa')
-print(f'Vitesse de l\'écoulement : {u:.2f} m/s')
-print(f'Reynolds : {REYNOLDS:.2e}')
-print('Profil NACA 2414')
-print('Angle d\'attaque : 4°')
+print('\n----- Flow Conditions -----')
+print(f'Mach: {M}')
+print(f'Farfield static temperature: {T} K')
+print(f'Farfield static pressure: {P} Pa')
+print(f'Flow velocity: {u:.2f} m/s')
+print(f'Reynolds: {REYNOLDS:.2e}')
+print('Airfoil NACA 2414')
+print('Angle of attack: 4°')
 
 #==============================================================
-# region 2. DÉMARRAGE DE FLUENT ET CHARGEMENT DU MAILLAGE
+# region 2. STARTING FLUENT AND LOADING THE MESH
 #==============================================================
 
-print("\nDémarrage de Fluent en mode solveur avec 4 coeurs, précision double, 2D...")
-solver = pyfluent.launch_fluent(precision="double", #double précision
-                                processor_count=4, #nombre de coeurs
-                                mode="solver", #arrière plan
-                                start_timeout=120, #120s pour démarrer Fluent
+print("\nStarting Fluent in solver mode with 4 cores, double precision, 2D...")
+solver = pyfluent.launch_fluent(precision="double", #double precision
+                                processor_count=4, #number of cores
+                                mode="solver", #background
+                                start_timeout=120, #120s to start Fluent
                                 dimension=2,
                                 cwd=r"C:\temp_ansys") #2D
 
-print("\nChargement du maillage...")
-solver.tui.file.read_case("maillages/mesh_4deg.msh")
-print("\nMaillage chargé avec succès.")
+print("\nLoading mesh...")
+solver.tui.file.read_case("meshs/mesh_4deg.msh")
+print("\nMesh loaded successfully.")
 
 #==============================================================
-# region 3. CONFIGURATION GÉNÉRALE ET MODÈLES PHYSIQUES
+# region 3. GENERAL CONFIGURATION AND PHYSICAL MODELS
 #==============================================================
 
-print("\nConfiguration générale...")
+print("\nGeneral configuration...")
 
-# Modèle physique : écoulement compressible (API moderne)
+# Physical model: compressible flow (modern API)
 solver.settings.setup.general.solver.type = "pressure-based"
 solver.settings.setup.general.solver.time = "transient"
-solver.settings.setup.models.energy.enabled = True # Activer l'énergie
+solver.settings.setup.models.energy.enabled = True # Enable energy
 
-# Modèle de turbulence : k-w-SST (API moderne)
+# Turbulence model: k-w-SST (modern API)
 solver.settings.setup.models.viscous.model = "k-omega" 
 solver.settings.setup.models.viscous.k_omega_model = "sst"
 
-# Propriétés du fluide :air
-solver.settings.setup.materials.fluid['air'].density.option = "ideal-gas" #Gaz parfait
-solver.settings.setup.materials.fluid['air'].viscosity.option = "sutherland" #Viscosité de Sutherland
+# Fluid properties: air
+solver.settings.setup.materials.fluid['air'].density.option = "ideal-gas" #Ideal gas
+solver.settings.setup.materials.fluid['air'].viscosity.option = "sutherland" #Sutherland viscosity
 
 solver.setup.cell_zone_conditions.fluid["fluid-pi_ce-corps_surfacique"].material = "air"
 
 #==============================================================
-# region 3. CONDITIONS AU LIMITES
+# region 3. BOUNDARY CONDITIONS
 #==============================================================
 
-print("\nConfiguration des conditions aux limites...")
+print("\nConfiguring boundary conditions...")
 
 solver.settings.setup.general.operating_conditions.operating_pressure = P
 
 # --- INLET ---
 solver.tui.define.boundary_conditions.zone_type("inlet", "velocity-inlet")
 inlet = solver.setup.boundary_conditions.velocity_inlet['inlet']
-inlet.momentum.vmag = u                                  # Onglet Momentum
-inlet.turbulence.turb_intensity = 0.001                  # Onglet Turbulence
-inlet.turbulence.turb_viscosity_ratio = 10              # Onglet Turbulence
-inlet.thermal.temperature = T                                     # Onglet Thermal
+inlet.momentum.vmag = u                                  # Momentum tab
+inlet.turbulence.turb_intensity = 0.001                  # Turbulence tab
+inlet.turbulence.turb_viscosity_ratio = 10              # Turbulence tab
+inlet.thermal.temperature = T                                     # Thermal tab
 
 # --- OUTLET ---
 solver.tui.define.boundary_conditions.zone_type("outlet", "pressure-outlet")
 outlet = solver.setup.boundary_conditions.pressure_outlet['outlet']
-outlet.momentum.gauge_pressure = 0.0                     # Onglet Momentum
-outlet.turbulence.turb_intensity = 0.001                  # Onglet Turbulence
-outlet.turbulence.turb_viscosity_ratio = 10               # Onglet Turbulence
-outlet.thermal.backflow_total_temperature = T                                    # Onglet Thermal
+outlet.momentum.gauge_pressure = 0.0                      # Momentum tab
+outlet.turbulence.turb_intensity = 0.001                  # Turbulence tab
+outlet.turbulence.turb_viscosity_ratio = 10               # Turbulence tab
+outlet.thermal.backflow_total_temperature = T             # Thermal tab
 
 # --- MOVING WALLS ---
-murs = solver.setup.boundary_conditions.wall['moving_walls']
-murs.momentum.motion_bc = "Moving Wall"                  # Onglet Momentum
-murs.momentum.vmag = u                                   # Onglet Momentum
-murs.momentum.shear_bc = "No Slip"                       # Onglet Momentum
-murs.momentum.direction = [1.0, 0.0]                                # Onglet Momentum
+walls = solver.setup.boundary_conditions.wall['moving_walls']
+walls.momentum.motion_bc = "Moving Wall"                  # Momentum tab
+walls.momentum.vmag = u                                   # Momentum tab
+walls.momentum.shear_bc = "No Slip"                       # Momentum tab
+walls.momentum.direction = [1.0, 0.0]                     # Momentum tab
 
 #==============================================================
-# region 4. CONTRÔLE DE LA SOLUTION ET STRATÉGIE DE SOLUTION
+# region 4. SOLUTION CONTROL AND SOLUTION STRATEGY
 #==============================================================
 
-print("\nConfiguration des schémas de discrétisation...")
-# Schémas de discrétisation
-solver.solution.methods.p_v_coupling.flow_scheme = "Coupled" # Schéma couplé
+print("\nConfiguring discretization schemes...")
+# Discretization schemes
+solver.solution.methods.p_v_coupling.flow_scheme = "Coupled" # Coupled scheme
 solver.solution.methods.gradient_scheme = "least-square-cell-based"
 solver.settings.solution.methods.transient_formulation = "unsteady-2nd-order"
 
-# Critères de convergence
-print("\nConfiguration des critères de convergence...")
+# Convergence criteria
+print("\nConfiguring convergence criteria...")
 solver.solution.monitor.residual.equations['continuity'].absolute_criteria = 1e-4
 solver.solution.monitor.residual.equations['x-velocity'].absolute_criteria = 1e-4
 solver.solution.monitor.residual.equations['y-velocity'].absolute_criteria = 1e-4
@@ -128,23 +128,23 @@ solver.solution.monitor.residual.equations['k'].absolute_criteria = 1e-6
 solver.solution.monitor.residual.equations['omega'].absolute_criteria = 1e-6
 
 #==============================================================
-# region 5. PARAMÉTRAGE DE LA SIMULATION 
+# region 5. SIMULATION SETUP 
 #==============================================================
 
-print("\nInitialisation de la simulation : standard à partir de l'inlet...")
+print("\nInitializing the simulation: standard from the inlet...")
 
-# Initialisation standard
+# Standard initialization
 solver.solution.initialization.initialization_type = "standard"
 solver.tui.solve.initialize.compute_defaults.velocity_inlet("inlet")
-solver.solution.initialization.standard_initialize() # Initialisation standard
+solver.solution.initialization.standard_initialize() # Standard initialization
 
-# Paramètres de la simulation
+# Simulation parameters
 solver.settings.solution.run_calculation.transient_controls.time_step_size = 0.005 # s
 
 #==============================================================
-# region 6. AUTOSAVE DE SECOURS
+# region 6. BACKUP AUTOSAVE
 #==============================================================
-print("\nConfiguration de l'autosave de sécurité...")
+print("\nConfiguring backup autosave...")
 
 autosave = solver.settings.file.auto_save
 
@@ -158,30 +158,30 @@ autosave.max_files = 3
 autosave.root_name = r'C:/temp_ansys/autosave_securite/4deg/autosave_4deg'
 
 #==============================================================
-# region 7. EXPORT DES RÉSULTATS POUR PARAVIEW
+# region 7. EXPORTING RESULTS FOR PARAVIEW
 #==============================================================
-# print("\nConfiguration de l'export pour ParaView...")
+# print("\nConfiguring export for ParaView...")
 
 # import os
 
-# # 1. On récupère le chemin dynamique (Votre excellente idée)
-# dossier_actuel = os.getcwd()
-# dossier_export = os.path.join(dossier_actuel, "export_pv", "4deg")
+# # 1. We get the dynamic path 
+# current_folder = os.getcwd()
+# export_folder = os.path.join(current_folder, "export_pv", "4deg")
 
-# # 2. On crée le dossier physiquement
-# os.makedirs(dossier_export, exist_ok=True)
+# # 2. We physically create the folder
+# os.makedirs(export_folder, exist_ok=True)
 
-# # 3. On crée le nom complet du fichier final
-# chemin_complet = os.path.join(dossier_export, "export4deg")
+# # 3. We create the full name of the final file
+# full_path = os.path.join(export_folder, "export4deg")
 
-# # 4. LA MAGIE : On remplace tous les \ de Windows par des / pour Fluent !
-# chemin_fluent = chemin_complet.replace("\\", "/")
+# # 4. We replace all Windows \ with / for Fluent!
+# fluent_path = full_path.replace("\\", "/")
 
 # solver.settings.solution.calculation_activity.automatic_exports.visualize.create(name="export")
 # export = solver.settings.solution.calculation_activity.automatic_exports.visualize["export"]
 
 # export.set_state({
-#     'file_name': chemin_fluent,
+#     'file_name': fluent_path,
 #     'frequency': 2,
 #     'frequency_of': 'Time Step',
 #     'cell_centered': True,
@@ -196,14 +196,14 @@ autosave.root_name = r'C:/temp_ansys/autosave_securite/4deg/autosave_4deg'
 def export_ensight_step(solver, file_name_step):
     journal_lines = [
         "/file/export/ensight-gold",
-        file_name_step,                      # case/data by base name          # cell-centered
+        file_name_step,                     
         "pressure",
         "mach-number", 
         "temperature",
         ""
         "velocity",
-        "",                              # fin de liste variables
-        "no",                              # append to existing files
+        "",                              
+        "no",                            
     ]
     
     journal_path = "C:/temp_ansys/export_tmp.jou"
@@ -213,9 +213,9 @@ def export_ensight_step(solver, file_name_step):
     solver.tui.file.read_journal(journal_path)
 
 #==============================================================
-# region 8. RAPPORT DE FORCES : DRAG & LIFT
+# region 8. FORCE REPORT: DRAG & LIFT
 #==============================================================
-print("\nConfiguration des force report...")
+print("\nConfiguring force reports...")
 
 # DRAG
 solver.settings.solution.report_definitions.drag.create(name="drag_report")
@@ -223,7 +223,7 @@ drag = solver.settings.solution.report_definitions.drag["drag_report"]
 drag.set_state({
     'force_vector': [1, 0, 0],
     'zones': ['aile'],
-    'report_output_type': 'Drag Force',  # ou 'Drag Coefficient' si vous avez défini une ref area
+    'report_output_type': 'Drag Force',  
     'average_over': 1,
 })
 # LIFT
@@ -235,8 +235,8 @@ lift.set_state({
     'report_output_type': 'Lift Force',  
 })
 
-# FICHIER RAPPORT
-print("\nConfiguration du fichier de rapport pour post-traitement...")
+# REPORT FILE
+print("\nConfiguring the report file for post-processing...")
 solver.settings.solution.monitor.report_files.create(name="rapport_forces")
 report = solver.settings.solution.monitor.report_files["rapport_forces"]
 pprint(report.get_state())
@@ -244,29 +244,29 @@ report.report_defs = ["drag_report", "lift_report"]
 
 report.file_name = "C:/temp_ansys/export_forces/suivi_forces.out"
 report.frequency_of = "time-step"
-report.frequency = 1 # On enregistre à chaque pas de temps
+report.frequency = 1 # Save at each time step
 
 #==============================================================
-# region 9. SAUVEGARDE DE LA CONFIGURATION
+# region 9. SAVING CONFIGURATION
 #==============================================================
 
-print("\nSauvegarde de la configuration...")
+print("\nSaving configuration...")
 solver.file.write(file_type="case", file_name="C:/temp_ansys/configurations/configuration_4deg.cas.h5")
 
 #==============================================================
-# region 10. LANCEMENT DU CALCUL
+# region 10. LAUNCHING THE CALCULATION
 #==============================================================
-print("\nLancement du calcul...")
+print("\nLaunching the calculation...")
 start_time = time.perf_counter()
 
-dossier_pv = r"C:\temp_ansys\export_pv\4deg"
-os.makedirs(dossier_pv, exist_ok=True)
-chemin_base = dossier_pv.replace("\\", "/") + "/res_"
+pv_folder = r"C:\temp_ansys\export_pv\4deg"
+os.makedirs(pv_folder, exist_ok=True)
+base_path = pv_folder.replace("\\", "/") + "/res_"
 
-for boucle in range(1,251) :
-    print(f"\n--- boucle {boucle}/250 ---")
+for loop in range(1,251) :
+    print(f"\n--- loop {loop}/250 ---")
 
-    file_name_step = chemin_base + f"{boucle:03d}.vtk"
+    file_name_step = base_path + f"{loop:03d}.vtk"
 
     solver.solution.run_calculation.dual_time_iterate(
         time_step_count=1,
@@ -279,23 +279,23 @@ for boucle in range(1,251) :
 
 
     if os.path.exists(file_name_step):
-        print(f"✅ Succès : Le fichier {file_name_step} est bien sur le disque.")
+        print(f"✅ Success: File {file_name_step} is properly on the disk.")
     else:
-        print(f"❌ ALERTE : Fluent n'a pas créé le fichier {file_name_step}.")
+        print(f"❌ ALERT: Fluent did not create the file {file_name_step}.")
         break
 
 end_time = time.perf_counter()
 elapsed_time = end_time - start_time
 
-heures = elapsed_time // 3600
+hours = elapsed_time // 3600
 minutes = (elapsed_time % 3600) // 60
-secondes = elapsed_time % 60
+seconds = elapsed_time % 60
 
 print("\n\n\n")
 print("="*40)
-print(f"Calcul terminé en {int(heures)}h {int(minutes)}m {secondes:.2f}s")
+print(f"Calculation finished in {int(hours)}h {int(minutes)}m {seconds:.2f}s")
 print("="*40)
 
-print("\nExtinction de FLuent...")
+print("\nShutting down Fluent...")
 solver.exit()
-print("\nFluent fermé avec succès.")
+print("\nFluent closed successfully.")
