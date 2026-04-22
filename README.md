@@ -1,5 +1,7 @@
 # ❄️ Impact of Frost Accretion on the Aerodynamic Performance of a NACA 2414 Airfoil
 
+> **⚠️ Note:** This project is currently under development. It is not complete and may contain errors or undergo significant changes.
+
 This student research project aims to estimate the impact of frost accretion on an airfoil under fixed flight conditions. This study is conducted exclusively through numerical simulation (CFD).
 
 The initial phase focuses on the flow around the "clean" (non-iced) airfoil. We establish a drag polar to serve as a baseline for comparing performance degradation once icing conditions are applied.
@@ -13,7 +15,8 @@ The initial phase focuses on the flow around the "clean" (non-iced) airfoil. We 
 3. [Solver Configuration](#solver-configuration)
 4. [Note on the Buffeting Phenomenon](#note-on-the-buffeting-phenomenon)
 5. [Future Objectives](#future-objectives)
-6. [Authors](#authors)
+6. [Installation](#installation)
+7. [Authors](#authors)
 
 ---
 
@@ -83,7 +86,56 @@ Detailed documentation review, specifically regarding the PyAnsys icing modules,
 
 ---
 
-## ✍️ Authors
+## Installation
+
+To set up the project locally, follow these steps.
+
+**Prerequisites:**
+*   Git
+*   Python 3.9+
+*   Ansys Fluent 2026R1 (or a compatible version)
+
+**1. Clone the Repository**
+Open your terminal and clone this repository to your local machine:
+```bash
+git clone <repository-url>
+cd <repository-folder>
+```
+
+**2. Create and Activate a Virtual Environment**
+It is highly recommended to use a virtual environment to manage project dependencies.
+```bash
+# Create the virtual environment
+python -m venv .venv
+
+# Activate it
+# On Windows:
+.\.venv\Scripts\activate
+# On macOS/Linux:
+source .venv/bin/activate
+```
+
+**3. Install Dependencies**
+Install the required Python packages.
+```bash
+pip install numpy ansys-fluent-core
+```
+
+**4. Configure Ansys Fluent Path**
+Before running the simulation script, you must specify the path to your local Ansys Fluent installation.
+
+Open the `Scripts_calcul/flow_4deg.py` file and modify the `exact_fluent_path` variable to match the path of your Fluent installation directory:
+```python
+# region ⚠️ ADAPTATION OF FLUENT PATH
+exact_fluent_path = r"C:\Program Files\ANSYS Inc\YOUR_VERSION\fluent"
+os.environ["PYFLUENT_FLUENT_ROOT"] = exact_fluent_path
+```
+
+You are now ready to run the simulation scripts.
+
+---
+
+## Authors
 
 * **Mathieu Granger** – 3rd-year Aerospace Engineering Student, ESTACA – [LinkedIn Profile](https://www.linkedin.com/in/mathieu-grng/)
 * **Valentin Gitta** – 3rd-year Aerospace Engineering Student, ESTACA – [LinkedIn Profile](https://www.linkedin.com/in/valentin-gitta/)

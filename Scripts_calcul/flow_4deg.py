@@ -10,6 +10,29 @@ import ansys.fluent.core as pyfluent
 # Location of Fluent 2026 R1 (v261)
 import os
 
+# Path management setup
+base_dir = os.getcwd()
+
+# Define dynamic paths
+autosave_dir = os.path.join(base_dir, "autosave_securite", "4deg")
+export_pv_dir = os.path.join(base_dir, "export_pv", "4deg")
+export_forces_dir = os.path.join(base_dir, "export_forces")
+config_dir = os.path.join(base_dir, "configurations")
+
+# Create directories if they don't exist
+os.makedirs(autosave_dir, exist_ok=True)
+os.makedirs(export_pv_dir, exist_ok=True)
+os.makedirs(export_forces_dir, exist_ok=True)
+os.makedirs(config_dir, exist_ok=True)
+
+def to_fluent_path(path):
+    """Convert Windows paths to Fluent-compatible paths."""
+    return path.replace("\\", "/")
+
+#==============================================================
+# region ⚠️ ADAPTATION OF FLUENT PATH
+#==============================================================
+
 exact_fluent_path = r"C:\Program Files\ANSYS Inc\ANSYS Student\v261\fluent"
 os.environ["PYFLUENT_FLUENT_ROOT"] = exact_fluent_path
 
@@ -50,7 +73,7 @@ solver = pyfluent.launch_fluent(precision="double", #double precision
                                 mode="solver", #background
                                 start_timeout=120, #120s to start Fluent
                                 dimension=2,
-                                cwd=r"C:\temp_ansys") #2D
+                                cwd=base_dir) #2D
 
 print("\nLoading mesh...")
 solver.tui.file.read_case("meshs/mesh_4deg.msh")
@@ -155,7 +178,7 @@ autosave.save_data_file_every = {
 autosave.retain_most_recent_files = True
 autosave.max_files = 3
 
-autosave.root_name = r'C:/temp_ansys/autosave_securite/4deg/autosave_4deg'
+autosave.root_name = to_fluent_path(os.path.join(autosave_dir, 'autosave_4deg'))
 
 #==============================================================
 # region 7. EXPORTING RESULTS FOR PARAVIEW
@@ -193,24 +216,23 @@ autosave.root_name = r'C:/temp_ansys/autosave_securite/4deg/autosave_4deg'
 # from pprint import pprint
 # pprint(export.get_state())
 
-def export_ensight_step(solver, file_name_step):
+def export_ensight_step(solver, file_name_step, journal_path):
     journal_lines = [
         "/file/export/ensight-gold",
         file_name_step,                     
         "pressure",
         "mach-number", 
         "temperature",
-        ""
+        "q",
         "velocity",
-        "",                              
+        "q",                              
         "no",                            
     ]
     
-    journal_path = "C:/temp_ansys/export_tmp.jou"
     with open(journal_path, "w") as f:
         f.write("\n".join(journal_lines) + "\n")
     
-    solver.tui.file.read_journal(journal_path)
+    solver.tui.file.read_journal(to_fluent_path(journal_path))
 
 #==============================================================
 # region 8. FORCE REPORT: DRAG & LIFT
@@ -242,7 +264,7 @@ report = solver.settings.solution.monitor.report_files["rapport_forces"]
 pprint(report.get_state())
 report.report_defs = ["drag_report", "lift_report"]
 
-report.file_name = "C:/temp_ansys/export_forces/suivi_forces.out"
+report.file_name = to_fluent_path(os.path.join(export_forces_dir, "suivi_forces.out"))
 report.frequency_of = "time-step"
 report.frequency = 1 # Save at each time step
 
@@ -251,7 +273,7 @@ report.frequency = 1 # Save at each time step
 #==============================================================
 
 print("\nSaving configuration...")
-solver.file.write(file_type="case", file_name="C:/temp_ansys/configurations/configuration_4deg.cas.h5")
+solver.file.write(file_type="case", file_name=to_fluent_path(os.path.join(config_dir, "configuration_4deg.cas.h5")))
 
 #==============================================================
 # region 10. LAUNCHING THE CALCULATION
@@ -259,9 +281,10 @@ solver.file.write(file_type="case", file_name="C:/temp_ansys/configurations/conf
 print("\nLaunching the calculation...")
 start_time = time.perf_counter()
 
-pv_folder = r"C:\temp_ansys\export_pv\4deg"
-os.makedirs(pv_folder, exist_ok=True)
-base_path = pv_folder.replace("\\", "/") + "/res_"
+base_path = to_fluent_path(export_pv_dir) + "/res_"
+
+journal_path = os.path.join(base_dir, "export_tmp.jou")
+transcript_path = to_fluent_path(os.path.join(base_dir, "transcript_export.txt"))
 
 for loop in range(1,251) :
     print(f"\n--- loop {loop}/250 ---")
@@ -273,8 +296,8 @@ for loop in range(1,251) :
         max_iter_per_step=10
     )
 
-    solver.tui.file.start_transcript("C:/temp_ansys/transcript_export.txt")
-    export_ensight_step(solver, file_name_step)
+    solver.tui.file.start_transcript(transcript_path)
+    export_ensight_step(solver, file_name_step, journal_path)
     solver.tui.file.stop_transcript()
 
 
