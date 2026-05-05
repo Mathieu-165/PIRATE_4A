@@ -1,0 +1,117 @@
+Auto-Transcript Start Time:  18:50:48, 01 May 2026 Paris, Madrid (heure d’été) 
+Current Directory: "C:\temp_ansys\meshs"
+
+              Welcome to ANSYS Fluent 2026 R1
+
+              Copyright 2026 Synopsys, Inc. and ANSYS, Inc. All rights reserved.
+              Unauthorized use, distribution or duplication is prohibited.
+              This product is subject to U.S. laws governing export and re-export.
+              For full Legal Notice, see documentation.
+
+Build Time: Feb  2 2026 16:27:16 EST  Build Id: 10262  
+ 
+Connected License Server List:	<Non FlexNet Publisher License Server (FNPLS)>
+
+     --------------------------------------------------------------
+     This is a student version of ANSYS FLUENT. Usage of this product
+     license is limited to the terms and conditions specified in your ANSYS
+     license form, additional terms section.
+     --------------------------------------------------------------
+Host spawning Node 0 on machine "HP-MathieuG" (win64).
+Host waiting for connection from Node 0 at 127.0.0.1:59472 
+
+Node 0 connecting to the Host ... connection established.
+
+--------------------------------------------------------------------------------------
+ID    Hostname     Core  O.S.         PID    CPU Model Name                          
+--------------------------------------------------------------------------------------
+n3    HP-MathieuG  4/12  Windows-x64  30276  AMD Ryzen 5 5600H with Radeon Graphics  
+n2    HP-MathieuG  3/12  Windows-x64  33124  AMD Ryzen 5 5600H with Radeon Graphics  
+n1    HP-MathieuG  2/12  Windows-x64  28644  AMD Ryzen 5 5600H with Radeon Graphics  
+n0*   HP-MathieuG  1/12  Windows-x64  868    AMD Ryzen 5 5600H with Radeon Graphics  
+host  HP-MathieuG        Windows-x64  15252  AMD Ryzen 5 5600H with Radeon Graphics  
+
+MPI Option Selected: intel
+Selected system interconnect: default
+--------------------------------------------------------------------------------------
+
+Cleanup script file is C:\\temp_ansys\\meshs\\cleanup-fluent-HP-MathieuG-15252.bat
+
+HP-MathieuG is already loaded (38.1735).                       Process affinity not being set.
+
+Graphics driver currently in use: dx11
+
+
+Posting ANSYS Product Improvement Program startup data
+Done.
+Reading "C:/temp_ansys/meshs/mesh_4deg.msh"...
+Buffering for file scan...
+
+  126956 nodes, binary.
+    2325 nodes, binary.
+  264038 2D interior faces, zone  1, binary.
+    1030 2D interior faces, zone  2, binary.
+     275 2D velocity-inlet faces, zone  6, binary.
+     740 2D wall faces, zone  7, binary.
+     275 2D pressure-outlet faces, zone  8, binary.
+     515 2D wall faces, zone  9, binary.
+     260 2D interface faces, zone 10, binary.
+     260 2D interface faces, zone 11, binary.
+  138112 mixed cells, zone  3, binary.
+
+
+
+Building...
+     mesh
+	auto partitioning mesh by Metis (fast),
+	distributing mesh
+		parts....,
+		faces....,
+		nodes....,
+		cells....,
+        bandwidth reduction using Reverse Cuthill-McKee: 32076/218 = 147.138
+     materials,
+     interface,
+     domains,
+     zones,
+	zone_de_contact-trg
+	zone_de_contact-src
+	aile
+	outlet
+	moving_walls
+	inlet
+	fluid-pi_ce-corps_surfacique
+	pi_ce-corps_surfacique
+	interior-pi_ce-corps_surfacique
+	interior-5
+	wall-12
+	wall-13
+     mesh interfaces,
+     parallel,
+
+Info: At least one many-to-many mesh interface is found in the case file. Such mesh interfaces will not be available in a future release of Fluent. It is recommended to convert to the current default one-to-one mesh interfaces with the following text command:
+/define/mesh-interfaces/one-to-one-pairing? yes
+
+Done.
+
+> (cx-gui-do cx-set-list-tree-selections "NavigationPane*Frame2*Table1*List_Tree2" (list "Results|Graphics|Mesh"))
+(cx-gui-do cx-set-list-tree-selections "NavigationPane*Frame2*Table1*List_Tree2" (list "Results|Graphics|Mesh"))
+(cx-gui-do cx-set-list-tree-selections "NavigationPane*Frame2*Table1*List_Tree2" (list "Results|Graphics|Mesh"))
+(cx-gui-do cx-activate-item "NavigationPane*Frame2*Table1*List_Tree2")
+(cx-gui-do cx-set-list-tree-selections "NavigationPane*Frame2*Table1*List_Tree2" (list "Results|Graphics|Mesh"))
+(cx-gui-do cx-activate-item "Mesh Display*PanelButtons*PushButton1(OK)")
+Note: zone-surface: cannot create surface from sliding interface zone.
+Creating empty surface.
+Note: zone-surface: cannot create surface from sliding interface zone.
+Creating empty surface.
+Note: zone-surface: cannot create surface from sliding interface zone.
+Creating empty surface.
+(cx-use-window-id 51)
+(cx-gui-do cx-activate-item "Mesh Display*PanelButtons*PushButton2(Cancel)")
+/exit y
+(cx-gui-do cx-activate-item "Question*OK")
+
+Posting ANSYS Product Improvement Program performance data 
+Done.
+Auto-Transcript Stop Time:  19:14:10, 01 May 2026 Paris, Madrid (heure d’été) 
+Total Transcript Time: 23 Minute 22 Second.
